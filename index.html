@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio 1 Mês Cocotas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .day-input, .login-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Desafio 1 Mês Cocotas</h1>
+
+    <div id="login-section" class="login-section">
+        <h2>Login</h2>
+        <label for="usuario">Digite suas iniciais (em maiúsculo):</label>
+        <input type="text" id="usuario" name="usuario" maxlength="2">
+        <button onclick="login()">Entrar</button>
+    </div>
+
+    <div id="container" style="display:none;">
+        <div class="day-input">
+            <h2>Dia <span id="dia">1</span></h2>
+            <label for="agua">Bebeu 2L de água?</label>
+            <input type="checkbox" id="agua" name="agua">
+            
+            <label for="abs">Treinou abdômen?</label>
+            <input type="checkbox" id="abs" name="abs">
+            
+            <label for="cardio">Fez cardio?</label>
+            <input type="checkbox" id="cardio" name="cardio">
+        </div>
+        
+        <button onclick="saveProgress()">Salvar progresso</button>
+        <p id="resultado"></p>
+    </div>
+
+    <script>
+        // Variáveis globais para usuário e progresso
+        let usuarioAtual = null;
+        let progresso = null;
+
+        // Função de login que carrega ou cria progresso para o usuário
+        function login() {
+            const usuario = document.getElementById('usuario').value.trim().toUpperCase();
+            if (usuario.length === 0) {
+                alert("Por favor, insira suas iniciais.");
+                return;
+            }
+
+            // Tenta carregar o progresso salvo no LocalStorage
+            progresso = JSON.parse(localStorage.getItem(usuario)) || {
+                diaAtual: 1,
+                aguaMC: 0,
+                absMC: 0,
+                cardMC: 0
+            };
+
+            usuarioAtual = usuario;
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('container').style.display = 'block';
+            document.getElementById('dia').innerText = progresso.diaAtual;
+
+            // Carrega o progresso do usuário
+            updateUI();
+        }
+
+        // Função que atualiza a interface do dia atual
+        function updateUI() {
+            document.getElementById('dia').innerText = progresso.diaAtual;
+
+            // Se já completou 31 dias, verifica o resultado
+            if (progresso.diaAtual > 31) {
+                checkFinal();
+            }
+        }
+
+        // Função chamada quando o botão "Salvar progresso" é clicado
+        function saveProgress() {
+            const agua = document.getElementById('agua').checked ? 1 : 0;
+            const abs = document.getElementById('abs').checked ? 1 : 0;
+            const cardio = document.getElementById('cardio').checked ? 1 : 0;
+
+            // Incrementa o progresso com base nos checkboxes
+            progresso.aguaMC += agua;
+            progresso.absMC += abs;
+            progresso.cardMC += cardio;
+
+            // Avança para o próximo dia
+            progresso.diaAtual++;
+            if (progresso.diaAtual <= 31) {
+                updateUI();
+            } else {
+                checkFinal();
+            }
+
+            // Salva o progresso atualizado no LocalStorage associado ao usuário
+            localStorage.setItem(usuarioAtual, JSON.stringify(progresso));
+
+            // Limpa os campos de entrada para o próximo dia
+            document.getElementById('agua').checked = false;
+            document.getElementById('abs').checked = false;
+            document.getElementById('cardio').checked = false;
+        }
+
+        // Função que verifica o resultado final do desafio
+        function checkFinal() {
+            let resultado = "Desafio não concluído. Valeu a tentativa!";
+            // Verifica se as metas mínimas foram atingidas
+            if (progresso.aguaMC >= 30 && progresso.absMC >= 9 && progresso.cardMC >= 15) {
+                resultado = "Parabéns, desafio concluído!";
+            }
+
+            // Exibe o resultado na página
+            document.getElementById('resultado').innerText = resultado;
+
+            // Remove o progresso do LocalStorage quando o desafio termina
+            localStorage.removeItem(usuarioAtual);
+        }
+
+    </script>
+
+</body>
+</html>
